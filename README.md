@@ -1,1 +1,3 @@
-# My computer vision projects from facial recognition to scene graphing.
+# Computer Vision Work
+
+My computer vision projects from facial recognition to scene graphing.
