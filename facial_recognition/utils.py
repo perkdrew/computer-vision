@@ -87,3 +87,11 @@ def get_data(dir):
     y_test = np.array(y_test)
     
     return (X_train, y_train), (X_test, y_test)
+
+
+def write_on_frame(frame, text, text_x, text_y):
+    (text_width, text_height) = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=2)[0]
+    box_coords = ((text_x, text_y), (text_x+text_width+20, text_y-text_height-20))
+    cv2.rectangle(frame, box_coords[0], box_coords[1], (255, 255, 255), cv2.FILLED)
+    cv2.putText(frame, text, (text_x, text_y-10), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(0,0,0), thickness=2)
+    return frame
