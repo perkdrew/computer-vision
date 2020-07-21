@@ -65,10 +65,10 @@ def create_siamese_nn(input_shape):
     return model
 
 
-def get_data(dir)
+def get_data(dir):
     X_train, y_train = [], []
     X_test, y_test = [], []
-    subfolders = sorted([f.path for f in os.scandir(faces_dir) if f.is_dir()])
+    subfolders = sorted([f.path for f in os.scandir(dir) if f.is_dir()])
     # iterate through the list of subfolders (subjects)
     for idx, folder in enumerate(subfolders):
         for file in sorted(os.listdir(folder)):
