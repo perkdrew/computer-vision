@@ -1,8 +1,9 @@
 import os
-import cv2
+import random
 import numpy as np
 from matplotlib import pyplot as plt
 
+import cv2
 from keras.preprocessing.image import load_img, img_to_array
 from keras.models import Sequential, Input, Model
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
@@ -102,3 +103,40 @@ distance = Lambda(euclidean_distance, output_shape=(1,))([output_top,
 model = Model(inputs=[input_top, input_bottom], outputs=distance)
 print(model.summary())
 
+def create_pairs(X, y, num_classes):
+    pairs, labels = [], []
+    # index of images in X and y for each class
+    class_idx = [np.where(y==i)[0] for i in range(num_classes)]
+    # the min number of images across all classes
+    min_images = min(len(class_idx[i]) for i in range(num_classes)) - 1
+    for c in range(num_classes):
+        for n in range(min_images):
+            # create positive pair
+            img1 = X[class_idx[c][n]]
+            img2 = X[class_idx[c][n+1]]
+            pairs.append((img1,img2))
+            labels.append(1)
+            # create negative pair
+            # list of classes that are different from the current class
+            neg_list = list(range(num_classes))
+            neg_list.remove(c)
+            # select a random class from the negative list
+            # this class will be used to form the negative pair
+            neg_c = random.sample(neg_list,1)[0]
+            img1 = X[class_idx[c][n]]
+            img2 = X[class_idx[neg_c][n]]
+            pairs.append((img1,img2))
+            labels.append(0)
+    return np.array(pairs), np.array(labels)
+
+num_classes = len(np.unique(y_train))
+training_pairs, training_labels = create_pairs(X_train, y_train, len(np.unique(y_train)))
+test_pairs, test_labels = create_pairs(X_test, y_test, len(np.unique(y_test)))
+
+def contrastive_loss(y_true, D):
+    margin = 1
+    return K.mean(y_true*K.square(D)+(1 - y_true)*K.maximum((margin-D),0))
+
+model.compile(loss=contrastive_loss, optimizer='adam')
+model.fit([training_pairs[:,0], training_pairs[:,1]], training_labels,
+           batch_size=64, epochs=10)
